@@ -49,8 +49,10 @@ A LangGraph-based multi-agent system that processes natural language queries and
    - Handles context and query understanding
 
 2. **UI Agent** (`agents/ui_agent.py`)
-   - Analyzes queries and answers
-   - Selects appropriate UI components
+   - Uses LangGraph with UI component tools
+   - Each UI component is defined as a separate tool
+   - LLM invokes tools just like any other agent tool
+   - Analyzes queries and answers to select appropriate components
    - Structures data according to component schemas
 
 ### Schemas

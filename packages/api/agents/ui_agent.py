@@ -2,16 +2,18 @@ from langchain.prompts import PromptTemplate
 from langchain.schema import BaseOutputParser
 from langchain.tools import BaseTool
 from langchain_core.language_models import BaseChatModel
-from typing import Dict, Any, List, Optional
+from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
+from langgraph.graph import StateGraph, END
+from langgraph.prebuilt import ToolNode
+from typing import Dict, Any, List, TypedDict, Annotated
+import operator
 import json
 import re
 from schemas.components import (
-    ComponentSchema, 
     WeatherCardSchema, 
     ChartCardSchema, 
     DataTableSchema, 
     InfoCardSchema,
-    ComponentType,
     ChartType,
     ChartDataPoint,
     TableColumn,
@@ -19,25 +21,29 @@ from schemas.components import (
 )
 
 
-class UIComponentTool(BaseTool):
-    name: str
-    description: str
-    component_type: ComponentType
-    
-    def _run(self, **kwargs) -> dict:
-        return self._create_component(**kwargs)
-    
-    async def _arun(self, **kwargs) -> dict:
-        return self._create_component(**kwargs)
-    
-    def _create_component(self, **kwargs) -> dict:
-        raise NotImplementedError
+class UIAgentState(TypedDict):
+    messages: Annotated[List[Any], operator.add]
+    query: str
+    answer: str
+    component: Dict[str, Any]
+    reasoning: str
 
 
-class WeatherCardTool(UIComponentTool):
+
+
+class WeatherCardTool(BaseTool):
     name: str = "create_weather_card"
-    description: str = "Create a weather card component for displaying weather information"
-    component_type: ComponentType = ComponentType.WEATHER_CARD
+    description: str = """Create a weather card component when the user asks about weather.
+    
+    Parameters:
+    - location: city or location name (required)
+    - temperature: temperature as a number (required)
+    - condition: weather condition like 'Sunny', 'Cloudy', 'Rainy' (required)
+    - humidity: humidity percentage as integer (optional)
+    - wind_speed: wind speed as number (optional)
+    - icon: weather icon like 'sunny', 'cloudy', 'rainy' (optional)
+    
+    Use this tool when the query and answer contain weather information."""
     
     def _parse_number(self, value, is_int=False):
         """Parse numeric values from strings with units"""
@@ -55,8 +61,8 @@ class WeatherCardTool(UIComponentTool):
             return int(parsed) if is_int else parsed
         return None
     
-    def _create_component(self, location: str, temperature, condition: str, 
-                         humidity=None, wind_speed=None, icon: str = None) -> dict:
+    def _run(self, location: str, temperature, condition: str, 
+             humidity=None, wind_speed=None, icon: str = None) -> str:
         # Parse numeric values from potentially string inputs
         parsed_temp = self._parse_number(temperature)
         parsed_humidity = self._parse_number(humidity, is_int=True)
@@ -70,16 +76,28 @@ class WeatherCardTool(UIComponentTool):
             wind_speed=parsed_wind,
             icon=icon
         )
-        return schema.model_dump()
-
-
-class ChartCardTool(UIComponentTool):
-    name: str = "create_chart_card"
-    description: str = "Create a chart card component for displaying data visualizations"
-    component_type: ComponentType = ComponentType.CHART_CARD
+        return json.dumps(schema.model_dump())
     
-    def _create_component(self, title: str, chart_type: str, data: List[dict], 
-                         x_axis_label: str = None, y_axis_label: str = None) -> dict:
+    async def _arun(self, location: str, temperature, condition: str, 
+                    humidity=None, wind_speed=None, icon: str = None) -> str:
+        return self._run(location, temperature, condition, humidity, wind_speed, icon)
+
+
+class ChartCardTool(BaseTool):
+    name: str = "create_chart_card"
+    description: str = """Create a chart component for data visualization.
+    
+    Parameters:
+    - title: chart title (required)
+    - chart_type: type of chart - 'bar', 'line', 'pie', or 'area' (required)
+    - data: list of data points, each with 'label' and 'value' keys (required)
+    - x_axis_label: label for x-axis (optional)
+    - y_axis_label: label for y-axis (optional)
+    
+    Use this tool when the query asks for charts, graphs, or data visualization."""
+    
+    def _run(self, title: str, chart_type: str, data: List[dict], 
+             x_axis_label: str = None, y_axis_label: str = None) -> str:
         chart_data = [ChartDataPoint(**point) for point in data]
         schema = ChartCardSchema(
             title=title,
@@ -88,16 +106,27 @@ class ChartCardTool(UIComponentTool):
             x_axis_label=x_axis_label,
             y_axis_label=y_axis_label
         )
-        return schema.model_dump()
-
-
-class DataTableTool(UIComponentTool):
-    name: str = "create_data_table"
-    description: str = "Create a data table component for displaying tabular data"
-    component_type: ComponentType = ComponentType.DATA_TABLE
+        return json.dumps(schema.model_dump())
     
-    def _create_component(self, title: str, columns: List[dict], rows: List[dict], 
-                         searchable: bool = True) -> dict:
+    async def _arun(self, title: str, chart_type: str, data: List[dict], 
+                    x_axis_label: str = None, y_axis_label: str = None) -> str:
+        return self._run(title, chart_type, data, x_axis_label, y_axis_label)
+
+
+class DataTableTool(BaseTool):
+    name: str = "create_data_table"
+    description: str = """Create a data table component for displaying tabular information.
+    
+    Parameters:
+    - title: table title (required)
+    - columns: list of column definitions with 'key' and 'label' (required)
+    - rows: list of row data dictionaries (required)
+    - searchable: whether table should be searchable (optional, default True)
+    
+    Use this tool when the query asks for tabular data, lists, or structured information."""
+    
+    def _run(self, title: str, columns: List[dict], rows: List[dict], 
+             searchable: bool = True) -> str:
         table_columns = [TableColumn(**col) for col in columns]
         table_rows = [TableRow(data=row) for row in rows]
         schema = DataTableSchema(
@@ -106,148 +135,210 @@ class DataTableTool(UIComponentTool):
             rows=table_rows,
             searchable=searchable
         )
-        return schema.model_dump()
-
-
-class InfoCardTool(UIComponentTool):
-    name: str = "create_info_card"
-    description: str = "Create an info card component for displaying general information"
-    component_type: ComponentType = ComponentType.INFO_CARD
+        return json.dumps(schema.model_dump())
     
-    def _create_component(self, title: str, content: str, icon: str = None, 
-                         variant: str = "default") -> dict:
+    async def _arun(self, title: str, columns: List[dict], rows: List[dict], 
+                    searchable: bool = True) -> str:
+        return self._run(title, columns, rows, searchable)
+
+
+class InfoCardTool(BaseTool):
+    name: str = "create_info_card"
+    description: str = """Create an info card component for general information.
+    
+    Parameters:
+    - title: card title (required)
+    - content: main content or description (required)
+    - icon: optional icon name like 'info', 'lightbulb', 'help' (optional)
+    - variant: card style - 'default', 'success', 'warning', or 'error' (optional)
+    
+    Use this tool for general information, explanations, or when no specific component fits."""
+    
+    def _run(self, title: str, content: str, icon: str = None, 
+             variant: str = "default") -> str:
         schema = InfoCardSchema(
             title=title,
             content=content,
             icon=icon,
             variant=variant
         )
-        return schema.model_dump()
-
-
-class UIComponentParser(BaseOutputParser):
-    def parse(self, text: str) -> dict:
-        try:
-            json_match = re.search(r'\{.*\}', text, re.DOTALL)
-            if json_match:
-                return json.loads(json_match.group())
-            return {"component": None, "reasoning": text}
-        except json.JSONDecodeError:
-            return {"component": None, "reasoning": text}
+        return json.dumps(schema.model_dump())
+    
+    async def _arun(self, title: str, content: str, icon: str = None, 
+                    variant: str = "default") -> str:
+        return self._run(title, content, icon, variant)
 
 
 class UIAgent:
     def __init__(self, llm: BaseChatModel):
         self.llm = llm
-        self.parser = UIComponentParser()
-        self.tools = {
-            "weather_card": WeatherCardTool(),
-            "chart_card": ChartCardTool(),
-            "data_table": DataTableTool(),
-            "info_card": InfoCardTool(),
-        }
         
-        self.prompt = PromptTemplate(
-            input_variables=["answer", "query"],
-            template="""You are a UI Component Agent responsible for selecting and structuring data for appropriate UI components based on user queries and answers.
+        # Initialize UI component tools
+        self.weather_tool = WeatherCardTool()
+        self.chart_tool = ChartCardTool()
+        self.table_tool = DataTableTool()
+        self.info_tool = InfoCardTool()
+        
+        self.tools = [self.weather_tool, self.chart_tool, self.table_tool, self.info_tool]
+        self.tool_node = ToolNode(self.tools)
+        
+        # Bind tools to LLM
+        self.llm_with_tools = self.llm.bind_tools(self.tools)
+        
+        # Build the LangGraph agent
+        self.graph = self._build_graph()
+        
+        # Fallback for when no tool is used
+        self.fallback_prompt = PromptTemplate(
+            input_variables=["query", "answer"],
+            template="""Based on this query and answer, provide a brief reasoning for why this response is appropriate:
 
-User Query: {query}
-Generated Answer: {answer}
+Query: {query}
+Answer: {answer}
 
-Available Components:
-1. WeatherCard - For weather-related information (location, temperature, condition, humidity, wind_speed, icon)
-2. ChartCard - For data visualization (title, chart_type: bar/line/pie/area, data points with label/value, axis labels)
-3. DataTable - For tabular data (title, columns with key/label, rows with data, searchable)
-4. InfoCard - For general information (title, content, icon, variant: default/success/warning/error)
-
-Analyze the query and answer to determine the most appropriate component. Extract and structure the relevant data according to the component's schema.
-
-Guidelines:
-- Use WeatherCard for weather queries
-  * temperature: provide as a number (e.g., 20.5, not "20°C")
-  * humidity: provide as an integer percentage (e.g., 65, not "65%")
-  * wind_speed: provide as a number (e.g., 12.5, not "12 km/h")
-  * condition: text description (e.g., "Sunny", "Cloudy", "Rainy")
-  * icon: simple keyword (e.g., "sunny", "cloudy", "rainy")
-- Use ChartCard for data that can be visualized (numbers, comparisons, trends)
-- Use DataTable for structured data with multiple rows/columns
-- Use InfoCard for general information, definitions, or simple facts
-
-Respond with a JSON object containing:
-{{
-  "component_type": "weather_card|chart_card|data_table|info_card",
-  "component_data": {{
-    // Component-specific data according to schema
-  }},
-  "reasoning": "Brief explanation of why this component was selected"
-}}
-
-If no specific component is appropriate, respond with:
-{{
-  "component_type": "info_card",
-  "component_data": {{
-    "title": "Information",
-    "content": "{answer}",
-    "variant": "default"
-  }},
-  "reasoning": "General information response"
-}}
-
-Response:"""
+Reasoning:"""
         )
     
-    def select_component(self, query: str, answer: str) -> Dict[str, Any]:
-        formatted_prompt = self.prompt.format(query=query, answer=answer)
-        response = self.llm.invoke(formatted_prompt)
-        result = self.parser.parse(response.content)
+    def _build_graph(self) -> StateGraph:
+        """Build the LangGraph agent workflow"""
+        workflow = StateGraph(UIAgentState)
         
-        if "component_type" in result and "component_data" in result:
-            component_type = result["component_type"]
-            component_data = result["component_data"]
-            
-            if component_type in self.tools:
-                tool = self.tools[component_type]
-                try:
-                    component = tool._create_component(**component_data)
-                    return {
-                        "component": component,
-                        "reasoning": result.get("reasoning", "")
-                    }
-                except Exception as e:
-                    return self._fallback_info_card(answer, f"Error creating component: {str(e)}")
+        # Add nodes
+        workflow.add_node("agent", self._call_model)
+        workflow.add_node("tools", self.tool_node)
+        workflow.add_node("finalize", self._finalize_response)
         
-        return self._fallback_info_card(answer, "Could not determine appropriate component")
+        # Set the entrypoint
+        workflow.set_entry_point("agent")
+        
+        # Add conditional edges
+        workflow.add_conditional_edges(
+            "agent",
+            self._should_continue,
+            {
+                "continue": "tools",
+                "end": "finalize",
+            },
+        )
+        
+        # Add normal edge from tools to finalize
+        workflow.add_edge("tools", "finalize")
+        workflow.add_edge("finalize", END)
+        
+        return workflow.compile()
     
-    def _fallback_info_card(self, answer: str, reasoning: str) -> Dict[str, Any]:
-        fallback_tool = self.tools["info_card"]
-        component = fallback_tool._create_component(
+    def _call_model(self, state: UIAgentState) -> Dict[str, Any]:
+        """Call the model with current state"""
+        messages = state["messages"]
+        response = self.llm_with_tools.invoke(messages)
+        return {"messages": [response]}
+    
+    def _should_continue(self, state: UIAgentState) -> str:
+        """Determine if we should continue with tool calls or end"""
+        messages = state["messages"]
+        last_message = messages[-1]
+        
+        # If there are tool calls, continue to tools
+        if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
+            return "continue"
+        
+        return "end"
+    
+    def _finalize_response(self, state: UIAgentState) -> Dict[str, Any]:
+        """Process the final response and extract component data"""
+        messages = state["messages"]
+        query = state["query"]
+        answer = state["answer"]
+        
+        # Look for tool results in messages
+        for message in reversed(messages):
+            if isinstance(message, ToolMessage):
+                try:
+                    component_data = json.loads(message.content)
+                    reasoning = f"Selected {component_data.get('type', 'component')} based on query content"
+                    return {
+                        "component": component_data,
+                        "reasoning": reasoning
+                    }
+                except json.JSONDecodeError:
+                    continue
+        
+        # Fallback if no tool was used - create info card
+        fallback_component = self.info_tool._run(
             title="Information",
             content=answer,
             variant="default"
         )
+        
+        reasoning_response = self.llm.invoke(
+            self.fallback_prompt.format(query=query, answer=answer)
+        )
+        
         return {
-            "component": component,
-            "reasoning": reasoning
+            "component": json.loads(fallback_component),
+            "reasoning": reasoning_response.content.strip()
+        }
+    
+    def select_component(self, query: str, answer: str) -> Dict[str, Any]:
+        """Select and create appropriate UI component"""
+        system_message = """You are a UI Component Agent. Your job is to select the most appropriate UI component for the given query and answer.
+
+Available tools:
+- create_weather_card: For weather information
+- create_chart_card: For data that can be visualized as charts
+- create_data_table: For tabular/structured data
+- create_info_card: For general information
+
+Analyze the query and answer, then use the most appropriate tool to create the UI component.
+If the content is about weather, use create_weather_card.
+If the content can be visualized as data, use create_chart_card.
+If the content is structured/tabular, use create_data_table.
+For general information, use create_info_card."""
+        
+        initial_state = {
+            "messages": [
+                HumanMessage(content=f"System: {system_message}\n\nUser Query: {query}\nGenerated Answer: {answer}\n\nPlease select and create the appropriate UI component.")
+            ],
+            "query": query,
+            "answer": answer,
+            "component": {},
+            "reasoning": ""
+        }
+        
+        result = self.graph.invoke(initial_state)
+        return {
+            "component": result.get("component", {}),
+            "reasoning": result.get("reasoning", "")
         }
     
     async def aselect_component(self, query: str, answer: str) -> Dict[str, Any]:
-        formatted_prompt = self.prompt.format(query=query, answer=answer)
-        response = await self.llm.ainvoke(formatted_prompt)
-        result = self.parser.parse(response.content)
+        """Async version of select_component"""
+        system_message = """You are a UI Component Agent. Your job is to select the most appropriate UI component for the given query and answer.
+
+Available tools:
+- create_weather_card: For weather information
+- create_chart_card: For data that can be visualized as charts
+- create_data_table: For tabular/structured data
+- create_info_card: For general information
+
+Analyze the query and answer, then use the most appropriate tool to create the UI component.
+If the content is about weather, use create_weather_card.
+If the content can be visualized as data, use create_chart_card.
+If the content is structured/tabular, use create_data_table.
+For general information, use create_info_card."""
         
-        if "component_type" in result and "component_data" in result:
-            component_type = result["component_type"]
-            component_data = result["component_data"]
-            
-            if component_type in self.tools:
-                tool = self.tools[component_type]
-                try:
-                    component = tool._create_component(**component_data)
-                    return {
-                        "component": component,
-                        "reasoning": result.get("reasoning", "")
-                    }
-                except Exception as e:
-                    return self._fallback_info_card(answer, f"Error creating component: {str(e)}")
+        initial_state = {
+            "messages": [
+                HumanMessage(content=f"System: {system_message}\n\nUser Query: {query}\nGenerated Answer: {answer}\n\nPlease select and create the appropriate UI component.")
+            ],
+            "query": query,
+            "answer": answer,
+            "component": {},
+            "reasoning": ""
+        }
         
-        return self._fallback_info_card(answer, "Could not determine appropriate component")
+        result = await self.graph.ainvoke(initial_state)
+        return {
+            "component": result.get("component", {}),
+            "reasoning": result.get("reasoning", "")
+        }
