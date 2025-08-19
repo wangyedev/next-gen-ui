@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Multi-Agent UI Frontend
 
-## Getting Started
+A Next.js frontend for the multi-agent system that renders dynamic UI components based on LangGraph agent decisions.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Dynamic Component Rendering**: Renders components based on agent selection
+- **Chat Interface**: Real-time query interface with streaming responses
+- **shadcn/ui Components**: Beautiful, accessible UI components
+- **TypeScript**: Full type safety with component schemas
+- **Real-time Communication**: HTTP and WebSocket support
+
+## Components
+
+### UI Components
+
+1. **WeatherCard**: Displays weather information with icons and metrics
+2. **ChartCard**: Renders various chart types (bar, line, pie, area)
+3. **DataTable**: Sortable, searchable data tables
+4. **InfoCard**: General information cards with variants
+
+### Core Features
+
+- **ComponentRenderer**: Dynamic component selection and rendering
+- **QueryInterface**: Chat-like interface for user interactions
+- **API Client**: HTTP client for backend communication
+- **WebSocket Client**: Real-time streaming support
+
+## Setup
+
+1. **Environment Setup**:
+   ```bash
+   cd packages/web
+   cp .env.local.example .env.local
+   # Edit .env.local if needed (API URL)
+   ```
+
+2. **Install Dependencies**:
+   ```bash
+   pnpm install
+   ```
+
+3. **Run Development Server**:
+   ```bash
+   pnpm dev
+   ```
+
+4. **Open Browser**:
+   Visit [http://localhost:3000](http://localhost:3000)
+
+## Architecture
+
+### Component System
+
+- **TypeScript Types**: Shared component schemas (`lib/types.ts`)
+- **UI Components**: Individual component implementations
+- **Component Renderer**: Dynamic component selection logic
+- **API Integration**: Communication with multi-agent backend
+
+### Query Flow
+
+1. User enters query in chat interface
+2. Frontend sends request to backend API
+3. Backend processes with LangGraph agents
+4. Structured response received with component data
+5. ComponentRenderer selects and renders appropriate component
+6. User sees natural language answer + visual component
+
+## Example Usage
+
+### Weather Query
+```
+User: "What's the weather in Paris?"
+→ WeatherCard component with temperature, conditions, etc.
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Data Visualization
+```
+User: "Show me sales data as a chart"
+→ ChartCard component with bar/line chart
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Tabular Data
+```
+User: "Display user data in a table"
+→ DataTable component with sorting/filtering
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### General Information
+```
+User: "Explain machine learning"
+→ InfoCard component with formatted content
+```
 
-## Learn More
+## Development
 
-To learn more about Next.js, take a look at the following resources:
+### Adding New Components
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Create component schema in `lib/types.ts`
+2. Implement component in `components/ui-components/`
+3. Add to `ComponentRenderer` switch statement
+4. Update backend schemas to match
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Styling
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Uses Tailwind CSS with shadcn/ui components for consistent design system.
