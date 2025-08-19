@@ -1,0 +1,32 @@
+{
+  "name": "next-gen-ui",
+  "version": "1.0.0",
+  "description": "Next-gen UI monorepo with Python backend and TypeScript frontend",
+  "private": true,
+  "scripts": {
+    "dev:web": "pnpm --filter web dev",
+    "dev:api": "pnpm --filter api dev",
+    "build:web": "pnpm --filter web build",
+    "build:api": "pnpm --filter api build",
+    "test": "pnpm --recursive test",
+    "lint": "pnpm --recursive lint",
+    "clean": "pnpm --recursive clean"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0",
+  "keywords": [
+    "monorepo",
+    "typescript",
+    "python",
+    "frontend",
+    "backend"
+  ],
+  "author": "",
+  "license": "ISC"
+}
