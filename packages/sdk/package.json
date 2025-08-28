@@ -1,0 +1,25 @@
+{
+  "name": "@gennie/sdk",
+  "version": "1.0.0",
+  "description": "TypeScript SDK for communicating with gennie agent service",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0",
+    "eslint": "^9.0.0"
+  },
+  "keywords": ["sdk", "ai", "ui", "components", "typescript"],
+  "author": "",
+  "license": "ISC"
+}

@@ -1,0 +1,405 @@
+{
+  "schemas": [
+    {
+      "name": "WeatherCard",
+      "component_name": "WeatherCard",
+      "category": "data_display",
+      "description": "weather card component",
+      "properties": [
+        {
+          "name": "location",
+          "type": "string",
+          "required": true,
+          "description": "location property"
+        },
+        {
+          "name": "temperature",
+          "type": "number",
+          "required": true,
+          "description": "temperature property"
+        },
+        {
+          "name": "condition",
+          "type": "string",
+          "required": true,
+          "description": "condition property"
+        },
+        {
+          "name": "humidity",
+          "type": "string",
+          "required": true,
+          "description": "humidity property"
+        },
+        {
+          "name": "wind_speed",
+          "type": "number",
+          "required": true,
+          "description": "wind_speed property"
+        },
+        {
+          "name": "icon",
+          "type": "string",
+          "required": true,
+          "description": "icon property",
+          "enum": [
+            "sunny",
+            "cloudy",
+            "rainy",
+            "info",
+            "lightbulb",
+            "file",
+            "help"
+          ]
+        }
+      ],
+      "tool_definition": {
+        "name": "render_eathercard",
+        "description": "Render a WeatherCard component with the provided data",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string",
+              "description": "location property"
+            },
+            "temperature": {
+              "type": "number",
+              "description": "Temperature in Celsius"
+            },
+            "condition": {
+              "type": "string",
+              "description": "condition property"
+            },
+            "humidity": {
+              "type": "integer",
+              "description": "Humidity percentage",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "wind_speed": {
+              "type": "number",
+              "description": "Wind speed in km/h",
+              "minimum": 0
+            },
+            "icon": {
+              "type": "string",
+              "description": "icon property"
+            }
+          },
+          "required": [
+            "location",
+            "temperature",
+            "condition",
+            "humidity",
+            "wind_speed",
+            "icon"
+          ]
+        }
+      }
+    },
+    {
+      "name": "InfoCard",
+      "component_name": "InfoCard",
+      "category": "content",
+      "description": "info card component",
+      "properties": [
+        {
+          "name": "title",
+          "type": "string",
+          "required": true,
+          "description": "title property"
+        },
+        {
+          "name": "content",
+          "type": "string",
+          "required": true,
+          "description": "content property"
+        },
+        {
+          "name": "icon",
+          "type": "string",
+          "required": true,
+          "description": "icon property",
+          "enum": [
+            "sunny",
+            "cloudy",
+            "rainy",
+            "info",
+            "lightbulb",
+            "file",
+            "help"
+          ]
+        },
+        {
+          "name": "variant",
+          "type": "string",
+          "required": false,
+          "description": "variant property",
+          "enum": [
+            "default",
+            "success",
+            "warning",
+            "error"
+          ]
+        }
+      ],
+      "tool_definition": {
+        "name": "render_nfocard",
+        "description": "Render a InfoCard component with the provided data",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "title property"
+            },
+            "content": {
+              "type": "string",
+              "description": "content property"
+            },
+            "icon": {
+              "type": "string",
+              "description": "icon property"
+            },
+            "variant": {
+              "type": "string",
+              "description": "variant property",
+              "enum": [
+                "default",
+                "success",
+                "warning",
+                "error"
+              ]
+            }
+          },
+          "required": [
+            "title",
+            "content",
+            "icon"
+          ]
+        }
+      }
+    },
+    {
+      "name": "DataTable",
+      "component_name": "DataTable",
+      "category": "data_display",
+      "description": "data table component",
+      "properties": [
+        {
+          "name": "title",
+          "type": "string",
+          "required": true,
+          "description": "title property"
+        },
+        {
+          "name": "columns",
+          "type": "array",
+          "required": true,
+          "description": "columns property",
+          "items": {
+            "name": "column",
+            "type": "object",
+            "required": true,
+            "description": "Table column definition"
+          }
+        },
+        {
+          "name": "rows",
+          "type": "array",
+          "required": true,
+          "description": "rows property",
+          "items": {
+            "name": "row",
+            "type": "object",
+            "required": true,
+            "description": "Table row data"
+          }
+        },
+        {
+          "name": "searchable",
+          "type": "boolean",
+          "required": false,
+          "description": "searchable property"
+        }
+      ],
+      "tool_definition": {
+        "name": "render_atatable",
+        "description": "Render a DataTable component with the provided data",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "title property"
+            },
+            "columns": {
+              "type": "array",
+              "description": "columns property",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "description": "Column identifier"
+                  },
+                  "label": {
+                    "type": "string",
+                    "description": "Column display name"
+                  },
+                  "sortable": {
+                    "type": "boolean",
+                    "description": "Whether column is sortable"
+                  }
+                },
+                "required": [
+                  "key",
+                  "label"
+                ]
+              }
+            },
+            "rows": {
+              "type": "array",
+              "description": "rows property",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "description": "Row data as key-value pairs",
+                    "additionalProperties": true
+                  }
+                },
+                "required": [
+                  "data"
+                ]
+              }
+            },
+            "searchable": {
+              "type": "boolean",
+              "description": "searchable property"
+            }
+          },
+          "required": [
+            "title",
+            "columns",
+            "rows"
+          ]
+        }
+      }
+    },
+    {
+      "name": "ChartCard",
+      "component_name": "ChartCard",
+      "category": "data_visualization",
+      "description": "chart card component",
+      "properties": [
+        {
+          "name": "title",
+          "type": "string",
+          "required": true,
+          "description": "title property"
+        },
+        {
+          "name": "chart_type",
+          "type": "string",
+          "required": true,
+          "description": "chart_type property",
+          "enum": [
+            "bar",
+            "line",
+            "pie",
+            "area"
+          ]
+        },
+        {
+          "name": "data",
+          "type": "array",
+          "required": true,
+          "description": "data property",
+          "items": {
+            "name": "item",
+            "type": "object",
+            "required": true,
+            "description": "Data point with label and value"
+          }
+        },
+        {
+          "name": "x_axis_label",
+          "type": "string",
+          "required": true,
+          "description": "x_axis_label property"
+        },
+        {
+          "name": "y_axis_label",
+          "type": "string",
+          "required": true,
+          "description": "y_axis_label property"
+        }
+      ],
+      "tool_definition": {
+        "name": "render_hartcard",
+        "description": "Render a ChartCard component with the provided data",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "title property"
+            },
+            "chart_type": {
+              "type": "string",
+              "description": "chart_type property",
+              "enum": [
+                "bar",
+                "line",
+                "pie",
+                "area"
+              ]
+            },
+            "data": {
+              "type": "array",
+              "description": "data property",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string",
+                    "description": "Data point label"
+                  },
+                  "value": {
+                    "type": "number",
+                    "description": "Data point value"
+                  },
+                  "color": {
+                    "type": "string",
+                    "description": "Optional color for the data point"
+                  }
+                },
+                "required": [
+                  "label",
+                  "value"
+                ]
+              }
+            },
+            "x_axis_label": {
+              "type": "string",
+              "description": "x_axis_label property"
+            },
+            "y_axis_label": {
+              "type": "string",
+              "description": "y_axis_label property"
+            }
+          },
+          "required": [
+            "title",
+            "chart_type",
+            "data",
+            "x_axis_label",
+            "y_axis_label"
+          ]
+        }
+      }
+    }
+  ]
+}

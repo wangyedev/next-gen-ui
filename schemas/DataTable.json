@@ -1,0 +1,108 @@
+{
+  "name": "DataTable",
+  "component_name": "DataTable",
+  "category": "data_display",
+  "description": "data table component",
+  "properties": [
+    {
+      "name": "title",
+      "type": "string",
+      "required": true,
+      "description": "title property"
+    },
+    {
+      "name": "columns",
+      "type": "array",
+      "required": true,
+      "description": "columns property",
+      "items": {
+        "name": "column",
+        "type": "object",
+        "required": true,
+        "description": "Table column definition"
+      }
+    },
+    {
+      "name": "rows",
+      "type": "array",
+      "required": true,
+      "description": "rows property",
+      "items": {
+        "name": "row",
+        "type": "object",
+        "required": true,
+        "description": "Table row data"
+      }
+    },
+    {
+      "name": "searchable",
+      "type": "boolean",
+      "required": false,
+      "description": "searchable property"
+    }
+  ],
+  "tool_definition": {
+    "name": "render_atatable",
+    "description": "Render a DataTable component with the provided data",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "title property"
+        },
+        "columns": {
+          "type": "array",
+          "description": "columns property",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "description": "Column identifier"
+              },
+              "label": {
+                "type": "string",
+                "description": "Column display name"
+              },
+              "sortable": {
+                "type": "boolean",
+                "description": "Whether column is sortable"
+              }
+            },
+            "required": [
+              "key",
+              "label"
+            ]
+          }
+        },
+        "rows": {
+          "type": "array",
+          "description": "rows property",
+          "items": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "description": "Row data as key-value pairs",
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "data"
+            ]
+          }
+        },
+        "searchable": {
+          "type": "boolean",
+          "description": "searchable property"
+        }
+      },
+      "required": [
+        "title",
+        "columns",
+        "rows"
+      ]
+    }
+  }
+}

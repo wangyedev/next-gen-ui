@@ -1,0 +1,113 @@
+{
+  "name": "ChartCard",
+  "component_name": "ChartCard",
+  "category": "data_visualization",
+  "description": "chart card component",
+  "properties": [
+    {
+      "name": "title",
+      "type": "string",
+      "required": true,
+      "description": "title property"
+    },
+    {
+      "name": "chart_type",
+      "type": "string",
+      "required": true,
+      "description": "chart_type property",
+      "enum": [
+        "bar",
+        "line",
+        "pie",
+        "area"
+      ]
+    },
+    {
+      "name": "data",
+      "type": "array",
+      "required": true,
+      "description": "data property",
+      "items": {
+        "name": "item",
+        "type": "object",
+        "required": true,
+        "description": "Data point with label and value"
+      }
+    },
+    {
+      "name": "x_axis_label",
+      "type": "string",
+      "required": true,
+      "description": "x_axis_label property"
+    },
+    {
+      "name": "y_axis_label",
+      "type": "string",
+      "required": true,
+      "description": "y_axis_label property"
+    }
+  ],
+  "tool_definition": {
+    "name": "render_hartcard",
+    "description": "Render a ChartCard component with the provided data",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "title property"
+        },
+        "chart_type": {
+          "type": "string",
+          "description": "chart_type property",
+          "enum": [
+            "bar",
+            "line",
+            "pie",
+            "area"
+          ]
+        },
+        "data": {
+          "type": "array",
+          "description": "data property",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "description": "Data point label"
+              },
+              "value": {
+                "type": "number",
+                "description": "Data point value"
+              },
+              "color": {
+                "type": "string",
+                "description": "Optional color for the data point"
+              }
+            },
+            "required": [
+              "label",
+              "value"
+            ]
+          }
+        },
+        "x_axis_label": {
+          "type": "string",
+          "description": "x_axis_label property"
+        },
+        "y_axis_label": {
+          "type": "string",
+          "description": "y_axis_label property"
+        }
+      },
+      "required": [
+        "title",
+        "chart_type",
+        "data",
+        "x_axis_label",
+        "y_axis_label"
+      ]
+    }
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "name": "WeatherCard",
+  "component_name": "WeatherCard",
+  "category": "data_display",
+  "description": "weather card component",
+  "properties": [
+    {
+      "name": "location",
+      "type": "string",
+      "required": true,
+      "description": "location property"
+    },
+    {
+      "name": "temperature",
+      "type": "number",
+      "required": true,
+      "description": "temperature property"
+    },
+    {
+      "name": "condition",
+      "type": "string",
+      "required": true,
+      "description": "condition property"
+    },
+    {
+      "name": "humidity",
+      "type": "string",
+      "required": true,
+      "description": "humidity property"
+    },
+    {
+      "name": "wind_speed",
+      "type": "number",
+      "required": true,
+      "description": "wind_speed property"
+    },
+    {
+      "name": "icon",
+      "type": "string",
+      "required": true,
+      "description": "icon property",
+      "enum": [
+        "sunny",
+        "cloudy",
+        "rainy",
+        "info",
+        "lightbulb",
+        "file",
+        "help"
+      ]
+    }
+  ],
+  "tool_definition": {
+    "name": "render_eathercard",
+    "description": "Render a WeatherCard component with the provided data",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "location": {
+          "type": "string",
+          "description": "location property"
+        },
+        "temperature": {
+          "type": "number",
+          "description": "Temperature in Celsius"
+        },
+        "condition": {
+          "type": "string",
+          "description": "condition property"
+        },
+        "humidity": {
+          "type": "integer",
+          "description": "Humidity percentage",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "wind_speed": {
+          "type": "number",
+          "description": "Wind speed in km/h",
+          "minimum": 0
+        },
+        "icon": {
+          "type": "string",
+          "description": "icon property"
+        }
+      },
+      "required": [
+        "location",
+        "temperature",
+        "condition",
+        "humidity",
+        "wind_speed",
+        "icon"
+      ]
+    }
+  }
+}

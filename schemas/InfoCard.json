@@ -1,0 +1,83 @@
+{
+  "name": "InfoCard",
+  "component_name": "InfoCard",
+  "category": "content",
+  "description": "info card component",
+  "properties": [
+    {
+      "name": "title",
+      "type": "string",
+      "required": true,
+      "description": "title property"
+    },
+    {
+      "name": "content",
+      "type": "string",
+      "required": true,
+      "description": "content property"
+    },
+    {
+      "name": "icon",
+      "type": "string",
+      "required": true,
+      "description": "icon property",
+      "enum": [
+        "sunny",
+        "cloudy",
+        "rainy",
+        "info",
+        "lightbulb",
+        "file",
+        "help"
+      ]
+    },
+    {
+      "name": "variant",
+      "type": "string",
+      "required": false,
+      "description": "variant property",
+      "enum": [
+        "default",
+        "success",
+        "warning",
+        "error"
+      ]
+    }
+  ],
+  "tool_definition": {
+    "name": "render_nfocard",
+    "description": "Render a InfoCard component with the provided data",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "title property"
+        },
+        "content": {
+          "type": "string",
+          "description": "content property"
+        },
+        "icon": {
+          "type": "string",
+          "description": "icon property"
+        },
+        "variant": {
+          "type": "string",
+          "description": "variant property",
+          "enum": [
+            "default",
+            "success",
+            "warning",
+            "error"
+          ]
+        }
+      },
+      "required": [
+        "title",
+        "content",
+        "icon"
+      ]
+    }
+  }
+}
